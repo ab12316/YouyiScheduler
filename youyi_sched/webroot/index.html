@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>优易调度管理</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-mode="balanced">
+  <div class="bg-glow" id="bgGlow"></div>
+  <div class="bg-particles" id="bgParticles"></div>
+
+  <div class="app">
+    <header class="header fade-in">
+      <div class="header-top">
+        <div class="logo-wrap">
+          <div class="logo-ring"></div>
+          <span class="logo-icon">⚡</span>
+        </div>
+        <div class="header-text">
+          <h1>优易调度管理</h1>
+          <p class="subtitle">自适应性能调度 · APatch 模块</p>
+        </div>
+        <span class="badge pulse" id="deviceBadge">检测中</span>
+      </div>
+    </header>
+
+    <section class="hero-card fade-in" style="animation-delay: 0.05s">
+      <div class="hero-glow"></div>
+      <div class="hero-top">
+        <span class="label">当前档位</span>
+        <div class="mode-chip" id="modeChip">
+          <span class="chip-dot"></span>
+          <span id="currentMode">--</span>
+        </div>
+      </div>
+
+      <div class="power-meter">
+        <div class="power-meter-labels">
+          <span>功耗</span>
+          <span id="powerLevelText">L1</span>
+          <span>性能</span>
+        </div>
+        <div class="power-track">
+          <div class="power-fill" id="powerFill"></div>
+          <div class="power-thumb" id="powerThumb"></div>
+        </div>
+        <div class="power-ticks">
+          <span>L0</span><span>L1</span><span>L2</span><span>L3</span><span>L4</span>
+        </div>
+      </div>
+
+      <div class="status-grid">
+        <div class="stat" data-stat="cpu0">
+          <span class="stat-label">CPU P0</span>
+          <span class="stat-value" id="cpuP0">--</span>
+        </div>
+        <div class="stat" data-stat="cpu6">
+          <span class="stat-label">CPU P6</span>
+          <span class="stat-value" id="cpuP6">--</span>
+        </div>
+        <div class="stat" data-stat="gpu">
+          <span class="stat-label">GPU</span>
+          <span class="stat-value" id="gpuLevel">--</span>
+        </div>
+        <div class="stat" data-stat="temp">
+          <span class="stat-label">温度</span>
+          <span class="stat-value" id="temp">--</span>
+        </div>
+      </div>
+
+      <div class="daemon-row">
+        <span class="daemon-dot" id="daemonDot"></span>
+        <span class="daemon-status" id="daemonStatus">守护进程检测中</span>
+      </div>
+    </section>
+
+    <section class="modes fade-in" style="animation-delay: 0.1s">
+      <h2>性能档位</h2>
+      <div class="mode-list" id="modeList"></div>
+    </section>
+
+    <section class="actions fade-in" style="animation-delay: 0.15s">
+      <button class="btn secondary" id="btnReload">
+        <span class="btn-icon">↻</span> 重新应用
+      </button>
+      <button class="btn secondary" id="btnRestore">
+        <span class="btn-icon">⟲</span> 恢复原厂
+      </button>
+      <button class="btn secondary" id="btnProbe">
+        <span class="btn-icon">◎</span> 探测
+      </button>
+    </section>
+
+    <footer class="footer fade-in" style="animation-delay: 0.2s">
+      <p>满血模式无温控限制，请自行承担硬件风险 · 优易调度管理</p>
+    </footer>
+  </div>
+
+  <!-- 切换档位全屏过渡 -->
+  <div class="switch-overlay" id="switchOverlay">
+    <div class="switch-card">
+      <div class="switch-ring">
+        <div class="switch-ring-inner"></div>
+      </div>
+      <div class="switch-icon" id="switchIcon">⚡</div>
+      <p class="switch-title" id="switchTitle">正在切换</p>
+      <p class="switch-sub" id="switchSub">应用性能配置中...</p>
+      <div class="switch-bar"><div class="switch-bar-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- 自定义确认弹窗（WebView 不支持 confirm） -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-card">
+      <div class="modal-icon" id="confirmIcon">🔥</div>
+      <h3 class="modal-title" id="confirmTitle">确认操作</h3>
+      <p class="modal-body" id="confirmBody"></p>
+      <div class="modal-actions">
+        <button class="btn modal-cancel" id="confirmCancel">取消</button>
+        <button class="btn modal-confirm" id="confirmOk">确认开启</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

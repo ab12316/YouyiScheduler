@@ -1,0 +1,8 @@
+.DS_Store
+._*
+*.zip
+*.log
+youyi_sched/run/
+youyi_sched/logs/
+youyi_sched/state_backup/
+youyi_sched/config/probed.json

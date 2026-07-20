@@ -1,0 +1,45 @@
+#!/system/bin/sh
+MODDIR="$(cd "$(dirname "$0")/.." && pwd)"
+export MODDIR
+. "$MODDIR/bin/apm-common.sh"
+
+DAEMON_PID_FILE="$MODDIR/run/apm-daemon.pid"
+LOG_FILE="$MODDIR/logs/apm.log"
+
+mkdir -p "$MODDIR/run" "$MODDIR/logs" "$MODDIR/state_backup"
+
+log_msg "apm-daemon starting (MODDIR=$MODDIR)"
+
+load_device_profile || exit 1
+MODE=$(cat "$MODDIR/config/current_mode" 2>/dev/null | tr -d '[:space:]')
+[ -z "$MODE" ] && MODE=balanced
+
+apply_mode "$MODE"
+INTERVAL=$(profile_get persist_interval)
+[ -z "$INTERVAL" ] && INTERVAL=15
+
+log_msg "daemon active: mode=$MODE interval=${INTERVAL}s device=$DEVICE_PROFILE_ID"
+
+while true; do
+    if [ -f "$MODDIR/disable" ] || [ -f "$MODDIR/remove" ]; then
+        log_msg "module disabled/removed, restoring and exiting"
+        restore_all
+        break
+    fi
+
+    NEW_MODE=$(cat "$MODDIR/config/current_mode" 2>/dev/null | tr -d '[:space:]')
+    [ -z "$NEW_MODE" ] && NEW_MODE=balanced
+    if [ "$NEW_MODE" != "$MODE" ]; then
+        MODE="$NEW_MODE"
+        apply_mode "$MODE"
+        INTERVAL=$(profile_get persist_interval)
+        [ -z "$INTERVAL" ] && INTERVAL=15
+        log_msg "mode switched to $MODE"
+    fi
+
+    apply_mode "$MODE"
+    sleep "$INTERVAL"
+done
+
+rm -f "$DAEMON_PID_FILE"
+exit 0

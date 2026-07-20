@@ -1,0 +1,80 @@
+#!/system/bin/sh
+MODDIR="${0%/*}/.."
+. "$MODDIR/bin/apm-common.sh"
+
+CMD="${1:-status}"
+ARG="${2:-}"
+
+case "$CMD" in
+    set)
+        MODE="$ARG"
+        case "$MODE" in
+            eco|balanced|performance|gaming|beast) ;;
+            *)
+                echo "用法: apm-ctl set <eco|balanced|performance|gaming|beast>"
+                exit 1
+                ;;
+        esac
+        echo "$MODE" > "$MODDIR/config/current_mode"
+        load_device_profile
+        if apply_mode "$MODE"; then
+            name=$(ini_get "$MODDIR/config/profiles/${MODE}.conf" profile name)
+            echo "已切换到: $MODE ($name)"
+            printf '{"ok":true,"mode":"%s","name":"%s"}\n' "$MODE" "$name"
+        else
+            echo "切换失败: $MODE" >&2
+            printf '{"ok":false,"mode":"%s"}\n' "$MODE"
+            exit 1
+        fi
+        ;;
+    get)
+        cat "$MODDIR/config/current_mode" 2>/dev/null
+        ;;
+    status)
+        load_device_profile
+        get_status_json
+        echo
+        ;;
+    probe)
+        "$MODDIR/bin/apm-probe"
+        ;;
+    reload)
+        load_device_profile
+        MODE=$(cat "$MODDIR/config/current_mode" 2>/dev/null | tr -d '[:space:]')
+        apply_mode "$MODE"
+        echo "已重新应用: $MODE"
+        ;;
+    restore)
+        load_device_profile
+        restore_all
+        echo "已恢复原厂设置"
+        ;;
+    start)
+        if [ -f "$MODDIR/run/apm-daemon.pid" ] && kill -0 "$(cat "$MODDIR/run/apm-daemon.pid")" 2>/dev/null; then
+            echo "daemon 已在运行"
+            exit 0
+        fi
+        nohup "$MODDIR/bin/apm-daemon" >/dev/null 2>&1 &
+        echo $! > "$MODDIR/run/apm-daemon.pid"
+        echo "daemon 已启动 (pid=$(cat "$MODDIR/run/apm-daemon.pid"))"
+        ;;
+    stop)
+        if [ -f "$MODDIR/run/apm-daemon.pid" ]; then
+            kill "$(cat "$MODDIR/run/apm-daemon.pid")" 2>/dev/null
+            rm -f "$MODDIR/run/apm-daemon.pid"
+        fi
+        pkill -f "apm-daemon" 2>/dev/null
+        echo "daemon 已停止"
+        ;;
+    *)
+        echo "优易调度管理 控制工具"
+        echo "用法: apm-ctl <command> [args]"
+        echo "  set <mode>    切换性能档位"
+        echo "  get           获取当前档位"
+        echo "  status        JSON 状态"
+        echo "  probe         探测设备节点"
+        echo "  reload        重新应用当前档位"
+        echo "  restore       恢复原厂设置"
+        echo "  start|stop    守护进程"
+        ;;
+esac

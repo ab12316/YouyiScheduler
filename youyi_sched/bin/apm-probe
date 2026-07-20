@@ -1,0 +1,44 @@
+#!/system/bin/sh
+MODDIR="${0%/*}/.."
+OUT="$MODDIR/config/probed.json"
+
+{
+    echo "{"
+    echo "  \"probed_at\": \"$(date -Iseconds 2>/dev/null || date)\","
+    echo "  \"device\": \"$(getprop ro.product.device)\","
+    echo "  \"model\": \"$(getprop ro.product.model)\","
+    echo "  \"soc\": \"$(getprop ro.soc.model)\","
+    echo "  \"platform\": \"$(getprop ro.board.platform)\","
+    echo "  \"android\": \"$(getprop ro.build.version.release)\","
+    echo "  \"cpu_policies\": ["
+
+    first=1
+    for p in /sys/devices/system/cpu/cpufreq/policy*; do
+        [ -d "$p" ] || continue
+        [ "$first" -eq 0 ] && echo ","
+        first=0
+        pol=$(basename "$p" | sed 's/policy//')
+        printf '    {"policy":%s,"path":"%s","governor":"%s","max_freq":%s,"min_freq":%s,"cpus":"%s"}' \
+            "$pol" "$p" \
+            "$(cat "$p/scaling_governor" 2>/dev/null)" \
+            "$(cat "$p/cpuinfo_max_freq" 2>/dev/null)" \
+            "$(cat "$p/scaling_min_freq" 2>/dev/null)" \
+            "$(cat "$p/affected_cpus" 2>/dev/null | tr ' ' '-' | sed 's/-$//')"
+    done
+    echo ""
+    echo "  ],"
+    echo "  \"gpu\": {"
+    echo "    \"path\": \"/sys/class/kgsl/kgsl-3d0\","
+    echo "    \"governor\": \"$(cat /sys/class/kgsl/kgsl-3d0/devfreq/governor 2>/dev/null)\","
+    echo "    \"gpuclk\": \"$(cat /sys/class/kgsl/kgsl-3d0/gpuclk 2>/dev/null)\","
+    echo "    \"max_gpuclk\": \"$(cat /sys/class/kgsl/kgsl-3d0/max_gpuclk 2>/dev/null)\","
+    echo "    \"min_pwrlevel\": \"$(cat /sys/class/kgsl/kgsl-3d0/min_pwrlevel 2>/dev/null)\","
+    echo "    \"max_pwrlevel\": \"$(cat /sys/class/kgsl/kgsl-3d0/max_pwrlevel 2>/dev/null)\""
+    echo "  },"
+    echo "  \"horae_pid\": \"$(pidof horae 2>/dev/null)\","
+    echo "  \"thermal_engine_pid\": \"$(pidof thermal-engine-v2 2>/dev/null)\""
+    echo "}"
+} > "$OUT"
+
+echo "探测完成: $OUT"
+cat "$OUT"
