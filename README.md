@@ -2,7 +2,7 @@
 
 > Youyi Scheduler — 面向 APatch 的 Android 自适应性能调度模块
 
-**仓库地址**：https://github.com/ab12316/youyi-sched
+**仓库地址**：https://github.com/ab12316/YouyiScheduler
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 [![APatch](https://img.shields.io/badge/APatch-Module-green.svg)](https://apatch.dev/)
@@ -39,7 +39,7 @@
 
 ### 方式一：刷入 ZIP（推荐）
 
-1. 在 [Releases](https://github.com/ab12316/youyi-sched/releases) 页面下载 `youyi_sched.zip`
+1. 在 [Releases](https://github.com/ab12316/YouyiScheduler/releases) 页面下载 `youyi_sched.zip`
 2. 打开 **APatch 管理器** → 模块 → 从本地安装
 3. 选择 zip 文件，安装完成后 **重启手机**
 4. 重启后在模块列表点击 **WebUI** 进行配置
@@ -47,8 +47,8 @@
 ### 方式二：自行打包
 
 ```bash
-git clone https://github.com/ab12316/youyi-sched.git
-cd youyi-sched
+git clone https://github.com/ab12316/YouyiScheduler.git
+cd YouyiScheduler
 chmod +x build.sh
 ./build.sh
 # 生成 youyi_sched.zip
@@ -93,7 +93,7 @@ sh /data/adb/modules/youyi_sched/bin/apm-ctl restore
 ## 项目结构
 
 ```
-youyi-sched/
+YouyiScheduler/
 ├── youyi_sched/          # APatch 模块主体
 │   ├── module.prop       # 模块元信息
 │   ├── bin/              # apm-daemon / apm-ctl / apm-probe
