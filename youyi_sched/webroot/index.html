@@ -35,19 +35,20 @@
         </div>
       </div>
 
-      <div class="power-meter">
+      <div class="power-meter" id="powerMeter">
         <div class="power-meter-labels">
           <span>功耗</span>
           <span id="powerLevelText">L1</span>
           <span>性能</span>
         </div>
-        <div class="power-track">
+        <div class="power-track" id="powerTrack">
           <div class="power-fill" id="powerFill"></div>
           <div class="power-thumb" id="powerThumb"></div>
         </div>
-        <div class="power-ticks">
-          <span>L0</span><span>L1</span><span>L2</span><span>L3</span><span>L4</span>
+        <div class="power-ticks" id="powerTicks">
+          <span data-level="0">L0</span><span data-level="1">L1</span><span data-level="2">L2</span><span data-level="3">L3</span><span data-level="4">L4</span>
         </div>
+        <p class="power-hint">拖动滑块或点击刻度切换档位</p>
       </div>
 
       <div class="status-grid">

@@ -1,6 +1,6 @@
 id=youyi_sched
 name=优易调度管理
-version=v1.0.0
-versionCode=100
+version=v1.0.1
+versionCode=101
 author=ab12316
 description=优易调度管理 — APatch 自适应性能模块，支持省电/均衡/性能/电竞/满血五档，WebUI 可视化切换。适配 ColorOS / 高通骁龙平台。

@@ -2,7 +2,7 @@
 # APatch 模块安装脚本
 
 ui_print "*******************************"
-ui_print "  优易调度管理 v1.0.0"
+ui_print "  优易调度管理 v1.0.1"
 ui_print "  Youyi Scheduler for APatch"
 ui_print "*******************************"
 
@@ -16,7 +16,6 @@ set_perm_recursive "$MODPATH/bin" 0 0 0755 0700
 set_perm "$MODPATH/service.sh" 0 0 0755
 set_perm "$MODPATH/post-fs-data.sh" 0 0 0755
 set_perm "$MODPATH/uninstall.sh" 0 0 0755
-set_perm "$MODPATH/action.sh" 0 0 0755
 
 mkdir -p "$MODPATH/run" "$MODPATH/logs" "$MODPATH/state_backup"
 chmod 0755 "$MODPATH/run" "$MODPATH/logs" "$MODPATH/state_backup"

@@ -23,7 +23,6 @@ youyi_sched/
 ├── service.sh               # 开机 late_start 启动守护进程
 ├── post-fs-data.sh
 ├── uninstall.sh             # 卸载时恢复 sysfs
-├── action.sh                # APatch「执行」按钮
 ├── bin/
 │   ├── apm-common.sh        # 核心逻辑库
 │   ├── apm-daemon           # 守护进程

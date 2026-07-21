@@ -12,8 +12,10 @@ const MODES = [
 ];
 
 const MODE_MAP = Object.fromEntries(MODES.map(m => [m.id, m]));
+const LEVEL_TO_MODE = MODES.map(m => m.id);
 let currentModeId = 'balanced';
 let switching = false;
+let meterDragging = false;
 
 // ── 工具函数 ──────────────────────────────────────────
 
@@ -73,15 +75,46 @@ function sleep(ms) {
 
 // ── 主题 & 性能条 ─────────────────────────────────────
 
+function levelToPct(level) {
+  return (level / 4) * 100;
+}
+
+function pctToLevel(pct) {
+  return Math.max(0, Math.min(4, Math.round(pct * 4)));
+}
+
+function updatePowerTicks(level) {
+  document.querySelectorAll('#powerTicks span').forEach(el => {
+    const lv = parseInt(el.dataset.level, 10);
+    el.classList.toggle('tick-active', lv === level);
+  });
+}
+
+function applyThemePreview(level) {
+  const pct = levelToPct(level);
+  document.getElementById('powerFill').style.width = `${pct}%`;
+  document.getElementById('powerThumb').style.left = `${pct}%`;
+  document.getElementById('powerLevelText').textContent = `L${level}`;
+  updatePowerTicks(level);
+
+  const modeId = LEVEL_TO_MODE[level];
+  if (modeId) {
+    document.body.dataset.mode = modeId;
+    const m = MODE_MAP[modeId];
+    document.getElementById('currentMode').textContent = m.name;
+  }
+}
+
 function applyTheme(modeId) {
   document.body.dataset.mode = modeId;
   const m = MODE_MAP[modeId];
   if (!m) return;
 
-  const pct = (m.level / 4) * 100;
+  const pct = levelToPct(m.level);
   document.getElementById('powerFill').style.width = `${pct}%`;
   document.getElementById('powerThumb').style.left = `${pct}%`;
   document.getElementById('powerLevelText').textContent = `L${m.level}`;
+  updatePowerTicks(m.level);
 }
 
 function bumpChip() {
@@ -150,7 +183,9 @@ async function refreshStatus(animate = false) {
     const modeChanged = modeId !== currentModeId;
 
     currentModeId = modeId;
-    applyTheme(modeId);
+    if (!meterDragging) {
+      applyTheme(modeId);
+    }
 
     if (modeChanged && animate) {
       bumpChip();
@@ -270,6 +305,64 @@ async function setMode(modeId) {
   }
 }
 
+// ── 性能条拖动切换 ────────────────────────────────────
+
+function initPowerMeter() {
+  const track = document.getElementById('powerTrack');
+  if (!track) return;
+
+  const getLevelFromClientX = (clientX) => {
+    const rect = track.getBoundingClientRect();
+    const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+    return pctToLevel(x / rect.width);
+  };
+
+  const finishDrag = async (clientX) => {
+    if (!meterDragging) return;
+    meterDragging = false;
+    track.classList.remove('dragging');
+
+    const level = getLevelFromClientX(clientX);
+    const modeId = LEVEL_TO_MODE[level];
+
+    if (modeId === currentModeId) {
+      applyTheme(currentModeId);
+      document.getElementById('currentMode').textContent = MODE_MAP[currentModeId].name;
+      return;
+    }
+
+    await setMode(modeId);
+  };
+
+  track.addEventListener('pointerdown', (e) => {
+    if (switching) return;
+    meterDragging = true;
+    track.classList.add('dragging');
+    track.setPointerCapture(e.pointerId);
+    applyThemePreview(getLevelFromClientX(e.clientX));
+  });
+
+  track.addEventListener('pointermove', (e) => {
+    if (!meterDragging) return;
+    applyThemePreview(getLevelFromClientX(e.clientX));
+  });
+
+  track.addEventListener('pointerup', (e) => finishDrag(e.clientX));
+  track.addEventListener('pointercancel', (e) => {
+    meterDragging = false;
+    track.classList.remove('dragging');
+    applyTheme(currentModeId);
+    document.getElementById('currentMode').textContent = MODE_MAP[currentModeId].name;
+  });
+
+  document.querySelectorAll('#powerTicks span').forEach(el => {
+    el.addEventListener('click', () => {
+      const level = parseInt(el.dataset.level, 10);
+      setMode(LEVEL_TO_MODE[level]);
+    });
+  });
+}
+
 // ── 渲染档位列表 ──────────────────────────────────────
 
 function renderModes() {
@@ -281,8 +374,10 @@ function renderModes() {
         <div class="mode-name">${m.name}</div>
         <div class="mode-desc">${m.desc}</div>
       </div>
-      <span class="mode-level">L${m.level}</span>
-      <span class="mode-check">✓</span>
+      <div class="mode-aside">
+        <span class="mode-level">L${m.level}</span>
+        <span class="mode-check">✓</span>
+      </div>
     </div>
   `).join('');
 
@@ -332,5 +427,6 @@ document.getElementById('btnProbe').addEventListener('click', () =>
 // ── 启动 ──────────────────────────────────────────────
 
 renderModes();
+initPowerMeter();
 refreshStatus(true);
 setInterval(() => refreshStatus(false), 5000);
